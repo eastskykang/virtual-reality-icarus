@@ -19,7 +19,7 @@ public class Potentiometer: MonoBehaviour {
 			sp = new SerialPort ("/deb/tty.usbmodem411", 9600);
 			break;
 		default:
-			throw System.Exception;
+			throw new System.Exception();
 		}
 
 		sp.Open ();
@@ -42,9 +42,8 @@ public class Potentiometer: MonoBehaviour {
 					// angle of values
 					// 0    - 511   : left    -90 to  0
 					// 512  - 1023  : right   0   to  +90
-					float angleInput = value / 1024 * 180 - 90.0;
-
-					transform.Rotate(0, Time.deltaTime * angleInput, 0);
+					double angleInput = int.Parse(value) / 1024.0 * 180.0 - 90.0;
+					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
 				}
 			}
 			catch (System.Exception)
