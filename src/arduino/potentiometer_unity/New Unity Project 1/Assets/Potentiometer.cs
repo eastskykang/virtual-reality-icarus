@@ -33,17 +33,26 @@ public class Potentiometer: MonoBehaviour {
 		{
 			try
 			{
-				string value;
+				string packet1;
+				string packet2;
 
-				if ((value = sp.ReadLine()) != null) {
-					Debug.Log("Serial Out : " + value);
+				if ((packet1 = sp.ReadLine()) != null) {
+					Debug.Log("Serial Out : " + value1);
 					sp.BaseStream.Flush();
 
 					// angle of values
 					// 0    - 511   : left    -90 to  0
 					// 512  - 1023  : right   0   to  +90
-					double angleInput = int.Parse(value) / 1024.0 * 180.0 - 90.0;
+					double angleInput = double.Parse(packet1) / 1024.0 * 180.0 - 90.0;
 					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
+				}
+
+				if ((packet2 = sp.ReadLine()) != null) {
+					Debug.Log("Serial Out : " + packet2);
+					sp.BaseStream.Flush();
+
+					// velocity
+					double velocityInput = double.Parse(packet2);
 				}
 			}
 			catch (System.Exception)
@@ -51,5 +60,33 @@ public class Potentiometer: MonoBehaviour {
 				Debug.Log ("System Exception");
 			}
 		}
+	}
+
+	var ParsePacket (string str) {
+		// Packets
+		string anglePrefix = "AN";
+		string velocityPrefix = "VE";
+		string soundPrefix = "DB";
+
+		var strs = str.Split("::");
+
+		if (strs )
+
+		if (string.Compare(strs[0], anglePrefix)) {
+			return [];
+		} 
+		else if (string.Compare(strs[0], velocityPrefix)) {
+			return [];
+		}
+		else if (string.Compare(strs[0], soundPrefix)) {
+			return [];
+		}
+		else {
+			// exception 
+		}
+	}
+
+	VariableFromPacket() {
+		// Get variables from packets
 	}
 }
