@@ -19,6 +19,7 @@ plotGrid = 'on';
 time = zeros(1000, 1);
 data1 = zeros(1000, 1);
 data2 = zeros(1000, 1);
+data3 = zeros(1000, 1);
 count = 0;
 
 % Set up plot
@@ -42,11 +43,11 @@ grid(plotGrid);
 ax2 = gca;
 
 subplot(3, 1, 3)
-plotGraph3 = plot(time, data2, '.b');
+plotGraph3 = plot(time, data3, '.b');
 axis([0 1 0 1200]);
 title('sound input')
 xlabel('time (sec)')
-ylabel('angle (?)')
+ylabel('sound (?)')
 grid(plotGrid);
 ax3 = gca;
 
@@ -55,6 +56,7 @@ tic
 while ishandle(plotGraph1)
     readData1 = fgets(a);   % line 1
     readData2 = fgets(a);   % line 2
+    readData3 = fgets(a);   % line 3
     
     % variable init
     angle = 0;
@@ -65,7 +67,8 @@ while ishandle(plotGraph1)
     try
         [angle, velocity, sound] = VariableFromPacket(...
             ParsePacket(readData1), ...
-            ParsePacket(readData2));
+            ParsePacket(readData2), ...
+            ParsePacket(readData3));
     catch ME
         disp(ME)
     end
@@ -74,10 +77,11 @@ while ishandle(plotGraph1)
     time(count) = toc;
     data1(count) = velocity;
     data2(count) = angle;
+    data3(count) = sound;
     
     set(plotGraph1, 'XData', time, 'YData', data1);
     set(plotGraph2, 'XData', time, 'YData', data2);
-    set(plotGraph3, 'XData', time, 'YData', data2);
+    set(plotGraph3, 'XData', time, 'YData', data3);
     
     if count > 1000
         ax1.XLim = [time(count - 1000) time(count)];
@@ -127,7 +131,11 @@ function [tv] = ParsePacket(str)
     tv = {type, value};
 end
 
-function [angle, velocity, sound] = VariableFromPacket(t1v1, t2v2)
+function [angle, velocity, sound] = VariableFromPacket(t1v1, t2v2, t3v3)
+    
+    angle = 0;
+    velocity = 0;
+    sound = 0;
     
     t1 = t1v1{1};
     v1 = t1v1{2};
@@ -135,7 +143,8 @@ function [angle, velocity, sound] = VariableFromPacket(t1v1, t2v2)
     t2 = t2v2{1};
     v2 = t2v2{2};
     
-    sound = [];
+    t3 = t3v3{1};
+    v3 = t3v3{2};
     
     if t1 == 1
         angle = v1;
@@ -153,6 +162,16 @@ function [angle, velocity, sound] = VariableFromPacket(t1v1, t2v2)
         velocity = v2;
     elseif t2 == 3
         sound = v2;
+    else
+        assert('parse failed')
+    end
+    
+    if t3 == 1
+        angle = v3;
+    elseif t3 == 2
+        velocity = v3;
+    elseif t3 == 3
+        sound = v3;
     else
         assert('parse failed')
     end

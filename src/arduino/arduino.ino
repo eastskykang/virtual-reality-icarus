@@ -8,11 +8,13 @@
 
 // set pin numbers:
 const int switchPin = 2;      // pushbutton pin
-const int potentPin = A0;     // analog intput pin 
+const int potentPin = A0;     // analog input pin for potentiomenter 
+const int soundPin = A1;      // analog input pin for soundsensor
 
 // variables will change:
 int switchState = 0;          // variable for reading the pushbutton status
 int potentValue = 0;          // value read from the pot
+int soundLevel = 0;           // value from sound sensor
 
 // timers
 unsigned long data_timer;
@@ -48,6 +50,9 @@ void loop() {
   // 512  - 1023  : right   0   to  +90
   potentValue = analogRead(potentPin);
 
+  // soundLevel 
+  soundLevel = analogRead(soundPin);
+
   unsigned long current_time = millis();
 
   if (switchState) {
@@ -66,6 +71,9 @@ void loop() {
 
     // invoke sendPotData per 50 ms
     sendPotData();
+
+    // invoke sendSndData per 50ms
+    sendSndData();
 
     // update data_timer
     data_timer = current_time;
@@ -87,3 +95,8 @@ void sendVelData() {
 void sendPotData() {
   Serial.println(ANGLE_PREFIX + String(potentValue));
 }
+
+void sendSndData() {
+  Serial.println(SOUND_PREFIX + String(soundLevel));
+}
+
