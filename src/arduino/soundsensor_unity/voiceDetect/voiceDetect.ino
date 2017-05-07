@@ -1,5 +1,5 @@
 int snd_threshold = 100;
-int soundInputPin = 0;
+int soundInputPin = 1;
 
 boolean detectSound();
 boolean voiceflag;
