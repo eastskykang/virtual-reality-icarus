@@ -1,8 +1,8 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.AttachToProcess" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Potentiometer.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Potentiometer.cs">
     <Files>
-      <File FileName="Assets/Potentiometer.cs" Line="84" Column="51" />
+      <File FileName="Assets\Potentiometer.cs" Line="70" Column="6" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

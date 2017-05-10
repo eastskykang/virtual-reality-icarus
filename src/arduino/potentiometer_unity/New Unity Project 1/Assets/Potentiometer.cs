@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO.Ports;
 
-enum SensorDataType {ANGLE, VELOCITY, SOUND};
+enum SensorDataType {ANGLE, VELOCITY, SOUND, INVALID};
 
 public class Potentiometer: MonoBehaviour {
 
 	private SerialPort	sp;
 
+	public float rotationSpeed = 2.0f;
+	private Rigidbody bikeRigidbody;
+	private float angle_prev = 0.0f;
+	public float lambda = 0.2f;
+
 	// Use this for initialization
 	void Start () {
+
+		bikeRigidbody = GetComponent<Rigidbody>();
 
 		switch (SystemInfo.operatingSystemFamily) 
 		{
@@ -30,13 +37,13 @@ public class Potentiometer: MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
+
+		SensorData data1 = new SensorData();
+		SensorData data2 = new SensorData();
+		SensorData data3 = new SensorData();
+
 		if (sp.IsOpen)
 		{
-			SensorData data1;
-			SensorData data2;
-			SensorData data3;
-
 			try
 			{
 				string packet1;
@@ -44,44 +51,48 @@ public class Potentiometer: MonoBehaviour {
 				string packet3;
 
 				if ((packet1 = sp.ReadLine()) != null) {
-					Debug.Log("Serial Out : " + value1);
-					sp.BaseStream.Flush();
+					Debug.Log("Serial Out : " + packet1);
+					//sp.BaseStream.Flush();
 
 					data1 = ParsePacket(packet1);
 				}
 
 				if ((packet2 = sp.ReadLine()) != null) {
 					Debug.Log("Serial Out : " + packet2);
-					sp.BaseStream.Flush();
+					//sp.BaseStream.Flush();
 
 					data2 = ParsePacket(packet2);
 				}
 
 				if ((packet3 = sp.ReadLine()) != null) {
 					Debug.Log("Serial Out : " + packet3);
-					sp.BaseStream.Flush();
+					//sp.BaseStream.Flush();
 
 					data3 = ParsePacket(packet3);
 				}
+
+				// angle of values
+				// 0    - 511   : left    -90 to  0
+				// 512  - 1023  : right   0   to  +90
+				//					double angleInput = double.Parse(packet1) / 1024.0 * 180.0 - 90.0;
+				//					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
+
+				float angle = GetAngle (data1, data2, data3);
+				float angle_new = lambda * angle_prev + (1 - lambda) * angle;
+				transform.eulerAngles = new Vector3(0.0f, angle_new, 0.0f);
+				angle_prev = angle_new;
+
+				// frequency of wheel rotation 
+				// unit: Hz
+				float velocity = GetVelocity (data1, data2, data3);
+
+				// signal value from sound sensor
+				float sound = GetSound (data1, data2, data3);
 			}
-			catch (System.Exception)
+			catch (UnityException)
 			{
 				Debug.Log ("System Exception");
 			}
-
-			// angle of values
-			// 0    - 511   : left    -90 to  0
-			// 512  - 1023  : right   0   to  +90
-			//					double angleInput = double.Parse(packet1) / 1024.0 * 180.0 - 90.0;
-			//					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
-			double angle = GetAngle (data1, data2, data3);
-
-			// frequency of wheel rotation 
-			// unit: Hz
-			double velocity = GetVelocity (data1, data2, data3);
-
-			// signal value from sound sensor
-			double sound = GetSound (data1, data2, data3);
 		}
 	}
 
@@ -91,27 +102,28 @@ public class Potentiometer: MonoBehaviour {
 		string velocityPrefix = "VE";
 		string soundPrefix = "DB";
 
-		string[] strs = str.Split("::");
+		string[] strs = str.Split(new string[] {"::"}, System.StringSplitOptions.None);
 
 		if (strs.Length != 2)
 			// exception
-			Debug.Log ("something wrong");
+			Debug.Log ("ParsePacket: Packet is not valid");
 
-		if (string.Compare(strs[0], anglePrefix)) {
-			return new SensorData (SensorDataType.ANGLE, strs [1]);
-		} 
-		else if (string.Compare(strs[0], velocityPrefix)) {
-			return new SensorData (SensorDataType.VELOCITY, strs [1]);
+		if (string.Equals (strs[0], anglePrefix)) {
+			return new SensorData (SensorDataType.ANGLE, float.Parse (strs [1]));
 		}
-		else if (string.Compare(strs[0], soundPrefix)) {
-			return new SensorData (SensorDataType.SOUND, strs [1]);;
+		else if (string.Equals(strs[0], velocityPrefix)) {
+			return new SensorData (SensorDataType.VELOCITY, float.Parse (strs [1]));
+		}
+		else if (string.Equals(strs[0], soundPrefix)) {
+			return new SensorData (SensorDataType.SOUND, float.Parse (strs [1]));
 		}
 		else {
 			// exception 
+			throw new UnityException ("ParsePacket: Packet is not valid"); 
 		}
 	}
 
-	double GetAngle(SensorData data1, SensorData data2, SensorData data3) {
+	float GetAngle(SensorData data1, SensorData data2, SensorData data3) {
 		if (data1 != null && data1.dataType == SensorDataType.ANGLE)
 			return data1.value;
 		else if (data2 != null && data2.dataType == SensorDataType.ANGLE)
@@ -120,10 +132,10 @@ public class Potentiometer: MonoBehaviour {
 			return data3.value;
 		else
 			// exception
-			return 0;
+			throw new UnityException ("GetAngle: Packet is not valid"); 
 	}
 
-	double GetVelocity(SensorData data1, SensorData data2, SensorData data3) {
+	float GetVelocity(SensorData data1, SensorData data2, SensorData data3) {
 		if (data1 != null && data1.dataType == SensorDataType.VELOCITY)
 			return data1.value;
 		else if (data2 != null && data2.dataType == SensorDataType.VELOCITY)
@@ -132,10 +144,10 @@ public class Potentiometer: MonoBehaviour {
 			return data3.value;
 		else
 			// exception
-			return 0;
+			throw new UnityException ("GetVelocity: Packet is not valid"); 
 	}
 
-	double GetSound(SensorData data1, SensorData data2, SensorData data3) {
+	float GetSound(SensorData data1, SensorData data2, SensorData data3) {
 		if (data1 != null && data1.dataType == SensorDataType.SOUND)
 			return data1.value;
 		else if (data2 != null && data2.dataType == SensorDataType.SOUND)
@@ -144,7 +156,7 @@ public class Potentiometer: MonoBehaviour {
 			return data3.value;
 		else
 			// exception
-			return 0;
+			throw new UnityException ("GetSound: Data is not valid"); 
 	}
 }
 
@@ -153,11 +165,16 @@ class SensorData {
 	// 0: angle
 	// 1: velocity
 	// 2: sound
-	private SensorDataType dataType;
+	public SensorDataType dataType;
 
-	private double value;
+	public float value;
 
-	public SensorData(SensorDataType dataType, double value) {
+	public SensorData() {
+		this.dataType = SensorDataType.INVALID;
+		this.value = 0;
+	}
+
+	public SensorData(SensorDataType dataType, float value) {
 		this.dataType = dataType;
 		this.value = value;
 	}
