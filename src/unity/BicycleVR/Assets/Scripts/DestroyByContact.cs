@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class DestroyByContact : MonoBehaviour {
 
-    public GameObject explosionBird;
-    public GameObject explosionPlayer;
-    public GameObject explosionCoin;
+  //  public GameObject explosionBird;
+   // public GameObject explosionPlayer;
+  //  public GameObject explosionCoin;
+
+	private float birdDamage = 5.0f;
+	private float groundDamage = 500.0f;
+	private float voice = 5.0f;
 
     public int scoreValue;
     private GameController gameController;
@@ -26,27 +30,24 @@ public class DestroyByContact : MonoBehaviour {
 
     void OnTriggerEnter(Collider other)
     {
-        if (this.tag == "Player" && other.tag == "Coin")
+        if (other.tag == "Coin")
         {
-            gameController.AddScore(scoreValue);
-            Instantiate(explosionCoin, other.transform.position, other.transform.rotation);
+            //gameController.AddScore(scoreValue);
+           // Instantiate(explosionCoin, other.transform.position, other.transform.rotation);
             Destroy(other.gameObject);
+			gameController.TakeCoin (voice);
         }
 
-        if (this.tag == "Bird" && other.tag == "Coin")
+		if (other.tag == "Bird")
         {
-            Instantiate(explosionBird, this.transform.position, this.transform.rotation);
-            Destroy(gameObject);
+           // Instantiate(explosionBird, this.transform.position, this.transform.rotation);
             Destroy(other.gameObject);
+			gameController.TakeDamage (birdDamage);
         }
 
-        if (this.tag == "Bird" && other.tag == "Player")
-        {
-            Instantiate(explosionBird, this.transform.position, this.transform.rotation);
-            Instantiate(explosionPlayer, other.transform.position, other.transform.rotation);
-            Destroy(gameObject);
-            Destroy(other.gameObject);
-            gameController.GameOver();
-        }
+		if (other.tag == "Terrain")
+		{
+			gameController.TakeDamage (groundDamage); 
+		}
     }
 }

@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class DestroyByTime : MonoBehaviour
 {
-    public float lifetime;
+    public float lifeTime;
 
-    // Use this for initialization
     void Start()
     {
-        Destroy(gameObject, lifetime);
+        Destroy(gameObject, lifeTime);
     }
 }
