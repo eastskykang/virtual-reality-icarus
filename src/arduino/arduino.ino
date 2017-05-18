@@ -9,8 +9,8 @@
 // set pin numbers:
 const int buttonPin = 2;       // calibration button pin 
 const int switchPin = 3;      // lead switch pin
-const int potentPin = A0;     // analog input pin for potentiomenter 
-const int soundPin = A1;      // analog input pin for soundsensor
+const int potentPin = A1;     // analog input pin for potentiomenter 
+const int soundPin = A2;      // analog input pin for soundsensor
 
 // variables will change:
 int buttonState = 0;          // variable for reading the button status
