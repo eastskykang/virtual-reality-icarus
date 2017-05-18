@@ -7,12 +7,14 @@
 #define SOUND_PREFIX      "DB::"
 
 // set pin numbers:
-const int switchPin = 2;      // pushbutton pin
+const int buttonPin = 2;       // calibration button pin 
+const int switchPin = 3;      // lead switch pin
 const int potentPin = A0;     // analog input pin for potentiomenter 
 const int soundPin = A1;      // analog input pin for soundsensor
 
 // variables will change:
-int switchState = 0;          // variable for reading the pushbutton status
+int buttonState = 0;          // variable for reading the button status
+int switchState = 0;          // variable for reading the lead switch status
 int potentValue = 0;          // value read from the pot
 int soundLevel = 0;           // value from sound sensor
 
@@ -23,6 +25,9 @@ unsigned long velo_timer;
 // variable for velocity
 unsigned int  cnt;
 unsigned long velocity;
+
+// variable for zero calibration
+int zeropoint = 512;
 
 void setup() {
 
@@ -42,12 +47,15 @@ void setup() {
 }
 
 void loop() {
-  // read the state of the pushbutton value:
+
+  // read the state of the calibration button value
+  buttonState = digitalRead(buttonPin);
+  
+  // read the state of the lead switch value
   switchState = digitalRead(switchPin);
   
   // potentValue
-  // 0    - 511   : left    -90 to  0
-  // 512  - 1023  : right   0   to  +90
+  // 0 - 1023
   potentValue = analogRead(potentPin);
 
   // soundLevel 
@@ -60,6 +68,11 @@ void loop() {
   } else {
     // for debug
     //Serial.println("button not pressed");
+  }
+
+  if (buttonState) {
+    // calibration angle 
+    caliZero();
   }
   
   if (current_time - data_timer > SENDING_DELAY) {
@@ -84,8 +97,13 @@ void loop() {
 }
 
 void calcVelo() {
-  velocity = 1000 * LAMBDA * cnt / SENDING_DELAY + (1 - LAMBDA) * velocity;
+  velocity = 1000 * cnt / SENDING_DELAY;
+//  velocity = 1000 * LAMBDA * cnt / SENDING_DELAY + (1 - LAMBDA) * velocity;
   cnt = 0;
+}
+
+void caliZero() {
+  zeropoint = potentValue;
 }
 
 void sendVelData() {
@@ -93,7 +111,7 @@ void sendVelData() {
 }
 
 void sendPotData() {
-  Serial.println(ANGLE_PREFIX + String(potentValue));
+  Serial.println(ANGLE_PREFIX + String(potentValue - zeropoint));
 }
 
 void sendSndData() {

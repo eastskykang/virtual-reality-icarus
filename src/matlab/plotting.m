@@ -6,7 +6,7 @@ if ~isempty(instrfind('Tag', 'Arduino'))
 end
 
 % User Defined Properties
-a = serial('/dev/cu.usbmodem411');             % define the Arduino Communication port
+a = serial('/dev/cu.usbmodem621');             % define the Arduino Communication port
 set(a, 'Tag', 'Arduino')
 
 fopen(a);
@@ -35,10 +35,10 @@ ax1 = gca;
 
 subplot(3, 1, 2)
 plotGraph2 = plot(time, data2, '.g');
-axis([0 1 0 1200]);
+axis([0 1 -1100 1100]);
 title('handle angle')
 xlabel('time (sec)')
-ylabel('angle (?)')
+ylabel('angle')
 grid(plotGrid);
 ax2 = gca;
 
@@ -47,7 +47,7 @@ plotGraph3 = plot(time, data3, '.b');
 axis([0 1 0 1200]);
 title('sound input')
 xlabel('time (sec)')
-ylabel('sound (?)')
+ylabel('sound')
 grid(plotGrid);
 ax3 = gca;
 
