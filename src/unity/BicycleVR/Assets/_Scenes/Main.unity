@@ -1422,8 +1422,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   forwardSpeed: 20
   rotationSpeed: 2
-  lambda: 0.2
-  scale: 1
+  K_pa: 0.5
+  velocity_scale: 50
+  velocity_thres: 0
+  K_pv: 0.5
   soundTreshold: 150
 --- !u!54 &1847652257
 Rigidbody:

@@ -13,9 +13,16 @@ public class PlayerReal: MonoBehaviour {
 	private float flyingSpeed = 200.0f;
 	public float rotationSpeed = 2.0f;
 	private Rigidbody bikeRigidbody;
-	private float angle_prev = 0.0f;
-	public float lambda = 0.2f;
-	public float scale = 1.0f;
+	private float angle_prevest = 0.0f;
+	public float K_pa = 0.5f; // Gain for angle measurement
+	public float decFactor= 0.5f;
+	private float velocity_prevest = 0.0f;
+	public float velocity_scale = 2000.0f;
+	public float velocity_thres = 0.0f;
+	private float velocity_eventTime = 0.0f;
+
+	public float K_pv = 0.5f; // Gain for angle measurement
+
 	public float soundTreshold = 150.0f;
 	private GameController gameController;
 
@@ -37,7 +44,7 @@ public class PlayerReal: MonoBehaviour {
 		switch (SystemInfo.operatingSystemFamily) 
 		{
 		case OperatingSystemFamily.Windows:
-			sp = new SerialPort ("COM5", 9600);
+			sp = new SerialPort ("COM5", 9600); // \\\\.\\
 			break;
 		case OperatingSystemFamily.MacOSX:
 			sp = new SerialPort ("/deb/tty.usbmodem411", 9600);
@@ -47,7 +54,7 @@ public class PlayerReal: MonoBehaviour {
 		}
 
 		sp.Open ();
-		sp.ReadTimeout = 50;
+		sp.ReadTimeout = 5000;
 	}
 	
 	// Update is called once per frame
@@ -77,21 +84,21 @@ public class PlayerReal: MonoBehaviour {
 				string packet3;
 
 				if ((packet1 = sp.ReadLine()) != null) {
-					Debug.Log("Serial Out : " + packet1);
+					//Debug.Log("Serial Out : " + packet1);
 					//sp.BaseStream.Flush();
 
 					data1 = ParsePacket(packet1);
 				}
 
 				if ((packet2 = sp.ReadLine()) != null) {
-					Debug.Log("Serial Out : " + packet2);
+					//Debug.Log("Serial Out : " + packet2);
 					//sp.BaseStream.Flush();
 
 					data2 = ParsePacket(packet2);
 				}
 
 				if ((packet3 = sp.ReadLine()) != null) {
-					Debug.Log("Serial Out : " + packet3);
+					//Debug.Log("Serial Out : " + packet3);
 					//sp.BaseStream.Flush();
 
 					data3 = ParsePacket(packet3);
@@ -102,17 +109,49 @@ public class PlayerReal: MonoBehaviour {
 				// 512  - 1023  : right   0   to  +90
 				//					double angleInput = double.Parse(packet1) / 1024.0 * 180.0 - 90.0;
 				//					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
-				float angle = GetAngle (data1, data2, data3);
-				float angle_new = lambda * angle_prev + (1 - lambda) * angle;
-				transform.eulerAngles = new Vector3(0.0f, angle_new, 0.0f);
-				angle_prev = angle_new;
+
+				float angle_meas = GetAngle (data1, data2, data3);
+ 				float angle_err = angle_meas - angle_prevest;
+				float angle_est =  angle_prevest + K_pa * angle_err;
+
+				//Debug.Log("Angle " + angle_meas);
+				transform.eulerAngles = new Vector3(0.0f, angle_est, 0.0f);
+				angle_prevest = angle_est;
 
 				// frequency of wheel rotation 
 				// unit: Hz
-				float velocity = GetVelocity (data1, data2, data3);
-				Debug.Log(+velocity);
-				bikeRigidbody.AddForce(transform.up * (flyingSpeed - 2*hit.distance) * velocity * scale);
+				float velocity_est = 0.0f; // Initialize velocity estimation
+				float velocity_meas = 0.0f;
+				float velocity_err = 0.0f;
+				float velocity_event =	GetVelocity (data1, data2, data3);
 
+				// Debug.Log("Hello!"+velocity_event);
+				if( velocity_event > 0){					
+
+					float diffTime = Time.time - velocity_eventTime;
+				//	Debug.Log("Hello!"+diffTime);
+					velocity_eventTime = Time.time;
+
+					velocity_meas = 2.0f / diffTime;
+					velocity_err = velocity_meas - velocity_prevest;
+					velocity_est =  velocity_prevest + K_pv * velocity_err;
+
+					velocity_prevest = velocity_est; 
+
+				}
+				else{
+					
+					velocity_est = decFactor * velocity_prevest; 
+					velocity_prevest = velocity_est;
+
+				}
+
+				float velocity_input = velocity_scale*(velocity_est - velocity_thres);
+					
+				Debug.Log("Velocity: Meas: " + velocity_meas +"Est: " + velocity_est+"In: " + velocity_input);
+
+				bikeRigidbody.AddForce(transform.up  * velocity_input);
+				// * (flyingSpeed - 2*hit.distance)
 				// signal value from sound sensor
 				float sound = GetSound (data1, data2, data3);
 				if (sound > soundTreshold)
@@ -125,6 +164,7 @@ public class PlayerReal: MonoBehaviour {
 				Debug.Log ("System Exception");
 			}
 		}
+	//	init = false;
 	}
 
 	SensorData ParsePacket (string str) {
