@@ -26,7 +26,7 @@ count = 0;
 figure(1)
 subplot(3, 1, 1)
 plotGraph1 = plot(time, data1, '.r');
-axis([0 1 0 500]);
+axis([0 1 0 30]);
 title('cycle velocity')
 xlabel('time (sec)')
 ylabel('frequency (Hz)')
