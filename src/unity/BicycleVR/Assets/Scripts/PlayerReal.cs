@@ -5,7 +5,7 @@ using System.IO.Ports;
 
 enum SensorDataType {ANGLE, VELOCITY, SOUND, INVALID};
 
-public class Potentiometer: MonoBehaviour {
+public class PlayerReal: MonoBehaviour {
 
 	private SerialPort	sp;
 
@@ -15,16 +15,29 @@ public class Potentiometer: MonoBehaviour {
 	private Rigidbody bikeRigidbody;
 	private float angle_prev = 0.0f;
 	public float lambda = 0.2f;
+	public float scale = 1.0f;
+	public float soundTreshold = 150.0f;
+	private GameController gameController;
 
 	// Use this for initialization
 	void Start () {
+
+		GameObject gameControllerObject = GameObject.FindWithTag("GameController");
+		if (gameControllerObject != null)
+		{
+			gameController = gameControllerObject.GetComponent<GameController>();
+		}
+		if (gameControllerObject == null)
+		{
+			Debug.Log("Cannot find 'GameController' script");
+		}
 
 		bikeRigidbody = GetComponent<Rigidbody>();
 
 		switch (SystemInfo.operatingSystemFamily) 
 		{
 		case OperatingSystemFamily.Windows:
-			sp = new SerialPort ("COM3", 9600);
+			sp = new SerialPort ("COM5", 9600);
 			break;
 		case OperatingSystemFamily.MacOSX:
 			sp = new SerialPort ("/deb/tty.usbmodem411", 9600);
@@ -97,11 +110,15 @@ public class Potentiometer: MonoBehaviour {
 				// frequency of wheel rotation 
 				// unit: Hz
 				float velocity = GetVelocity (data1, data2, data3);
-
-				//bikeRigidbody.AddForce(transform.up * (flyingSpeed - 2*hit.distance) * velocity);
+				Debug.Log(+velocity);
+				bikeRigidbody.AddForce(transform.up * (flyingSpeed - 2*hit.distance) * velocity * scale);
 
 				// signal value from sound sensor
 				float sound = GetSound (data1, data2, data3);
+				if (sound > soundTreshold)
+				{
+					gameController.TakeCoin (-2.0f);
+				}
 			}
 			catch (UnityException)
 			{
