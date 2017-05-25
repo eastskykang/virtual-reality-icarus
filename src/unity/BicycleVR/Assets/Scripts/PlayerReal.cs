@@ -13,6 +13,7 @@ public class PlayerReal: MonoBehaviour {
 	private float flyingSpeed = 200.0f;
 	public float rotationSpeed = 2.0f;
 	private Rigidbody bikeRigidbody;
+
 	private float angle_prevest = 0.0f;
 	public float K_pa = 0.5f; // Gain for angle measurement
 	public float decFactor= 0.5f;
@@ -44,7 +45,7 @@ public class PlayerReal: MonoBehaviour {
 		switch (SystemInfo.operatingSystemFamily) 
 		{
 		case OperatingSystemFamily.Windows:
-			sp = new SerialPort ("COM5", 9600); // \\\\.\\
+			sp = new SerialPort ("COM5", 9600);
 			break;
 		case OperatingSystemFamily.MacOSX:
 			sp = new SerialPort ("/deb/tty.usbmodem411", 9600);
@@ -65,11 +66,6 @@ public class PlayerReal: MonoBehaviour {
 		RaycastHit hit;
 		Ray landingRay = new Ray (transform.position, Vector3.down);
 		Physics.Raycast(landingRay, out hit);
-
-		if (Input.GetKey(KeyCode.Space))
-		{
-			bikeRigidbody.AddForce(transform.up * (flyingSpeed - 2*hit.distance));
-		}
 
 		SensorData data1 = new SensorData();
 		SensorData data2 = new SensorData();
@@ -152,6 +148,7 @@ public class PlayerReal: MonoBehaviour {
 
 				bikeRigidbody.AddForce(transform.up  * velocity_input);
 				// * (flyingSpeed - 2*hit.distance)
+
 				// signal value from sound sensor
 				float sound = GetSound (data1, data2, data3);
 				if (sound > soundTreshold)
@@ -164,7 +161,6 @@ public class PlayerReal: MonoBehaviour {
 				Debug.Log ("System Exception");
 			}
 		}
-	//	init = false;
 	}
 
 	SensorData ParsePacket (string str) {

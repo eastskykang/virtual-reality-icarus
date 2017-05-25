@@ -30,9 +30,8 @@ public class GameController : MonoBehaviour
     public Text restartText;
     public Text gameoverText;
     public Text manualText;
-
-	//public Text scoreText;
-	//private int score;
+	public Text timerText;
+	private float startTime;
 
 	public Image currentHealthBar;
 	public Text ratioTextH;
@@ -49,32 +48,31 @@ public class GameController : MonoBehaviour
 
     public GameObject coin;
     public GameObject bird;
-	//public GameObject player;
+	public GameObject energyBall;
 
     public Transform playerLocation;
 
-    public float coinArea = 20.0f;
-    public float birdArea = 100.0f;
-    public float coinGenTime = 5.0f;
-    public float birdGenTime = 10.0f;
+    public float coinArea = 100.0f;
+    public float birdArea = 300.0f;
+    public float coinGenTime = 1.0f;
+    public float birdGenTime = 3.0f;
 
-	private float rotSpeed = 5.0f;
+	public AudioClip[] Clips;
+	private AudioSource audioSource;
 
     private bool game = true;
 
     private void Start()
     {
-		//Vector3 startingPosition = new Vector3 (2093, 172, 1112);
-		//Instantiate(player, startingPosition, Quaternion.identity);
+		audioSource = GetComponent<AudioSource> ();
 
 		UpdateHealthBar ();
 		UpdateVoiceBar ();
 
-		manualText.text = "<Horzontal> Steering\n<Space> Flying\n<C> Change View";
+		manualText.text = "<Horzontal> Steering\n<Space> Flying\n";
         restartText.text = "";
         gameoverText.text = "";
-        //score = 0;
-        //Updatescore();
+		startTime = Time.time;
 
         currentCameraIndex = 0;
 
@@ -115,11 +113,15 @@ public class GameController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Escape))
             //Application.Quit();
             UnityEditor.EditorApplication.isPlaying = false;
-		if (Input.GetKeyDown(KeyCode.A))
-		{
-			
-		}
 
+		if (game){
+			float t = Time.time - startTime;
+
+			string minutes = ((int)t / 60).ToString ();
+			string seconds = (t % 60).ToString ("f2");
+
+			timerText.text = minutes + ":" + seconds;
+		}
     }
 
 	private void UpdateHealthBar()
@@ -133,7 +135,7 @@ public class GameController : MonoBehaviour
 	{
 		health -= damage;
 
-		if(health <0){
+		if(health < 0){
 			health = 0;
 			Debug.Log ("Dead!");
 			GameOver ();
@@ -154,29 +156,27 @@ public class GameController : MonoBehaviour
 	{
 		if (voice <= maxVoice)
 			voice += coin;
+		
+		if (voice < 0){
+			voice = 0;
+			Debug.Log ("Take coin first!");
+			return;
+		}
+
+		if (coin < 0){
+			audioSource.clip = Clips [0];
+			audioSource.Play ();
+			Instantiate(energyBall,  playerLocation.position, playerLocation.rotation);
+		}
 
 		UpdateVoiceBar ();
 	}
 
-/*
-    public void AddScore(int newScoreValue)
-    {
-        score += newScoreValue;
-        Updatescore();
-    }
-
-    private void Updatescore()
-    {
-        scoreText.text = "Score: " + score;
-    }
-*/
 	IEnumerator CoinGenerator()
 	{
 		while (game)
 		{
-			Vector3 coinPosition = new Vector3(Random.Range(playerLocation.position.x, playerLocation.position.x + coinArea),
-										       playerLocation.position.y,
-											   Random.Range(playerLocation.position.z, playerLocation.position.z));
+			Vector3 coinPosition = playerLocation.position + playerLocation.transform.forward * coinArea;
 			Quaternion coinRotation = Quaternion.identity;
 			Instantiate(coin, coinPosition, coinRotation);
 			yield return new WaitForSeconds(coinGenTime);
@@ -187,9 +187,13 @@ public class GameController : MonoBehaviour
 	{
 		while (game)
 		{
-			Vector3 birdPosition = new Vector3(Random.Range(playerLocation.position.x, playerLocation.position.x + birdArea),
-										       playerLocation.position.y,
-											   Random.Range(playerLocation.position.z, playerLocation.position.z));
+			float theta = Random.Range (20, 160.0f);
+			theta *= (Mathf.PI / 180.0f);
+			float length = Random.Range (100.0f, birdArea);
+
+			Vector3 birdPosition = playerLocation.position
+				+ playerLocation.transform.forward * length * Mathf.Sin (theta)
+				+ playerLocation.transform.right * length * Mathf.Cos (theta);
 			Quaternion birdRotation = Quaternion.identity;
 			Instantiate(bird, birdPosition, birdRotation);
 			yield return new WaitForSeconds(birdGenTime);
@@ -199,15 +203,20 @@ public class GameController : MonoBehaviour
 	private void GameOver()
 	{
 		//  Instantiate(explosionPlayer, other.transform.position, other.transform.rotation);
-		Destroy (GameObject.FindWithTag ("Player"));
+		GameObject player = GameObject.FindWithTag("Player");
 
 		for (int i = 0; i < cameras.Length - 1; i++)
 			cameras[i].gameObject.SetActive(false);
 
 		cameras[cameras.Length - 1].gameObject.SetActive(true);
+		cameras [cameras.Length - 1].gameObject.transform.position = player.transform.position + player.transform.up * 300;
 
+		Destroy (player);
+
+		manualText.text = "";
 		restartText.text = "Press <R> to restart\nPress <ESC> to close";
 		gameoverText.text = "GAME OVER";
+		timerText.color = Color.red;
 		game = false;
 	}
 }
