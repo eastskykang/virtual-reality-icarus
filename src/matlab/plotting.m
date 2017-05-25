@@ -6,7 +6,7 @@ if ~isempty(instrfind('Tag', 'Arduino'))
 end
 
 % User Defined Properties
-a = serial('/dev/cu.usbmodem411');             % define the Arduino Communication port
+a = serial('/dev/cu.usbmodem621');             % define the Arduino Communication port
 set(a, 'Tag', 'Arduino')
 
 fopen(a);
@@ -26,7 +26,7 @@ count = 0;
 figure(1)
 subplot(3, 1, 1)
 plotGraph1 = plot(time, data1, '.r');
-axis([0 1 0 30]);
+axis([0 1 0 10]);
 title('cycle velocity')
 xlabel('time (sec)')
 ylabel('frequency (Hz)')
