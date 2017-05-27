@@ -57,6 +57,5 @@ C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\Temp\bin\Debug\nunit.framew
 C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\Temp\bin\Debug\UnityEngine.Analytics.xml
 C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\Temp\bin\Debug\UnityEngine.HoloLens.xml
 C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\Temp\bin\Debug\UnityEngine.VR.xml
-C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\obj\Debug\Assembly-CSharp.dll
 C:\Users\SEC\Documents\vr-icarus\src\unity\BicycleVR\obj\Debug\Assembly-CSharp.pdb
