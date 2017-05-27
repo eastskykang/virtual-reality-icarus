@@ -7,10 +7,7 @@ TagManager:
   - Coin
   - Terrain
   - Bird
-  - RearWheel
-  - Top
-  - Bottom
-  - No
+  - Cannon
   layers:
   - Default
   - TransparentFX

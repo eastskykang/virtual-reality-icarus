@@ -48,7 +48,7 @@ public class GameController : MonoBehaviour
 
     public GameObject coin;
     public GameObject bird;
-	public GameObject energyBall;
+	public GameObject cannon;
 
     public Transform playerLocation;
 
@@ -57,7 +57,6 @@ public class GameController : MonoBehaviour
     public float coinGenTime = 1.0f;
     public float birdGenTime = 3.0f;
 
-	public AudioClip[] Clips;
 	private AudioSource audioSource;
 
     private bool game = true;
@@ -69,7 +68,7 @@ public class GameController : MonoBehaviour
 		UpdateHealthBar ();
 		UpdateVoiceBar ();
 
-		manualText.text = "<Horzontal> Steering\n<Space> Flying\n";
+		manualText.text = "<Horzontal> Steering\n<Space> Flying\n<S> Special Function\n";
         restartText.text = "";
         gameoverText.text = "";
 		startTime = Time.time;
@@ -164,9 +163,7 @@ public class GameController : MonoBehaviour
 		}
 
 		if (coin < 0){
-			audioSource.clip = Clips [0];
-			audioSource.Play ();
-			Instantiate(energyBall,  playerLocation.position, playerLocation.rotation);
+			Instantiate(cannon,  playerLocation.position, playerLocation.rotation);
 		}
 
 		UpdateVoiceBar ();
@@ -202,6 +199,8 @@ public class GameController : MonoBehaviour
 
 	private void GameOver()
 	{
+		audioSource.Stop ();
+
 		//  Instantiate(explosionPlayer, other.transform.position, other.transform.rotation);
 		GameObject player = GameObject.FindWithTag("Player");
 

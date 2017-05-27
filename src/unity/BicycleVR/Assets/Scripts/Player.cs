@@ -8,6 +8,7 @@ public class Player : MonoBehaviour {
     public float rotationSpeed = 2.0f; 
 	public float flyingPower = 200.0f;
 
+
     private Rigidbody bikeRigidbody;
 	private GameController gameController;
 

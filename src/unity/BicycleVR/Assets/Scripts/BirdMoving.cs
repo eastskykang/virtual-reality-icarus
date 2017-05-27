@@ -5,11 +5,10 @@ using UnityEngine;
 public class BirdMoving : MonoBehaviour {
 
     public float birdSpeed = 10.0f;
-    private Rigidbody bikeRigidbody;
-	//private GameController gameController;
+    private Rigidbody rigidbody;
 
     void Start () {
-        bikeRigidbody = GetComponent<Rigidbody>();
+        rigidbody = GetComponent<Rigidbody>();
 	}
 
     private void Update()
@@ -17,7 +16,7 @@ public class BirdMoving : MonoBehaviour {
 		GameObject gamePlayer = GameObject.FindWithTag("Player");
 		if (gamePlayer != null)
 		{
-			bikeRigidbody.transform.LookAt(gamePlayer.transform);
+			rigidbody.transform.LookAt(gamePlayer.transform);
 		}
 
 		if (gamePlayer == null)
@@ -25,7 +24,6 @@ public class BirdMoving : MonoBehaviour {
 			Destroy (this.gameObject);
 		}
 
-        bikeRigidbody.velocity = transform.forward * birdSpeed;
+        rigidbody.velocity = transform.forward * birdSpeed;
     }
-
 }
