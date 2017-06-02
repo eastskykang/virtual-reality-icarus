@@ -2,8 +2,6 @@
 
 This project is for the mini project of Virtual Reality I Spring 2017 course at ETH Zurich.
 
-## Overview
-
 ![overview1](https://raw.githubusercontent.com/EastskyKang/virtual-reality-icarus/master/img/overview-3.jpg)
 
 ![overview2](https://raw.githubusercontent.com/EastskyKang/virtual-reality-icarus/master/img/overview-4.jpg)
@@ -11,6 +9,8 @@ This project is for the mini project of Virtual Reality I Spring 2017 course at 
 ![overview3](https://raw.githubusercontent.com/EastskyKang/virtual-reality-icarus/master/img/overview-5.jpg)
 
 ![overview4](https://raw.githubusercontent.com/EastskyKang/virtual-reality-icarus/master/img/overview-6.jpg)
+
+## Modules
 
 - Arduino 
 - Matlab 
