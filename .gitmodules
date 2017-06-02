@@ -1,6 +1,0 @@
-[submodule "lib/TimeAlarms"]
-	path = lib/TimeAlarms
-	url = https://github.com/PaulStoffregen/TimeAlarms.git
-[submodule "lib/Time"]
-	path = lib/Time
-	url = https://github.com/PaulStoffregen/Time.git
