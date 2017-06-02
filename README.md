@@ -1,6 +1,6 @@
 # VR ICARUS 
 
-This project is for the mini project of Virtual Reality I Spring 2017 course at ETH Zurich.
+This project is for the mini project of [Virtual Reality I Spring 2017 course](https://www.icvr.ethz.ch/education/lectures/vr1/index_EN) at ETH Zurich.
 
 ![overview1](https://raw.githubusercontent.com/EastskyKang/virtual-reality-icarus/master/img/overview-3.jpg)
 
