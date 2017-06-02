@@ -9,9 +9,13 @@ public class PlayerReal: MonoBehaviour {
 
 	private SerialPort	sp;
 
-	public float forwardSpeed = 20.0f;
-	private float flyingSpeed = 200.0f;
-	public float rotationSpeed = 2.0f;
+	public float upSpeed = 20.0f;
+
+	private float forwardSpeed = 0.0f;
+	public float rotationSpeed = 2.0f; 
+	private float jump = 500.0f;
+	private bool contact = true;
+
 	private Rigidbody bikeRigidbody;
 
 	private float angle_prevest = 0.0f;
@@ -22,9 +26,9 @@ public class PlayerReal: MonoBehaviour {
 	public float velocity_thres = 0.0f;
 	private float velocity_eventTime = 0.0f;
 
-	public float K_pv = 0.5f; // Gain for angle measurement
-
-	public float soundTreshold = 150.0f;
+	public const float K_pv = 0.5f; // Gain for angle measurement
+	public const float angFactor = 0.001f;
+	public float soundTreshold = 100.0f;
 	private GameController gameController;
 
 	// Use this for initialization
@@ -57,15 +61,29 @@ public class PlayerReal: MonoBehaviour {
 		sp.Open ();
 		sp.ReadTimeout = 5000;
 	}
-	
+
+	void OnCollisionStay (Collision col)
+	{
+		forwardSpeed += 0.8f;
+		transform.position += Vector3.forward * Time.deltaTime * forwardSpeed;
+		Debug.Log (forwardSpeed);
+		if (forwardSpeed > 30.0f)
+		{
+ 			bikeRigidbody.AddForce (transform.up * jump);
+		}
+	}
+
+	void OnCollisionExit (Collision col)
+	{
+		contact = false;
+	}
+
 	// Update is called once per frame
 	void Update () {
+		
 
+		////////// Forward ////////// 
 		transform.position += transform.forward * Time.deltaTime * forwardSpeed;
-
-		RaycastHit hit;
-		Ray landingRay = new Ray (transform.position, Vector3.down);
-		Physics.Raycast(landingRay, out hit);
 
 		SensorData data1 = new SensorData();
 		SensorData data2 = new SensorData();
@@ -100,60 +118,63 @@ public class PlayerReal: MonoBehaviour {
 					data3 = ParsePacket(packet3);
 				}
 
-				// angle of values
-				// 0    - 511   : left    -90 to  0
-				// 512  - 1023  : right   0   to  +90
-				//					double angleInput = double.Parse(packet1) / 1024.0 * 180.0 - 90.0;
-				//					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
+				if (contact == false){
+					////////// Rotation //////////
+					// angle of values
+					// 0    - 511   : left    -90 to  0
+					// 512  - 1023  : right   0   to  +90
+					//					double angleInput = double.Parse(packet1) / 1024.0 * 180.0 - 90.0;
+					//					transform.Rotate(0, (float) angleInput * Time.deltaTime, 0);
 
-				float angle_meas = GetAngle (data1, data2, data3);
- 				float angle_err = angle_meas - angle_prevest;
-				float angle_est =  angle_prevest + K_pa * angle_err;
+					float angle_meas = GetAngle (data1, data2, data3);
+					float angle_err = angle_meas - angle_prevest;
+					float angle_est =  angle_prevest + K_pa * angle_err;
 
-				//Debug.Log("Angle " + angle_meas);
-				transform.eulerAngles = new Vector3(0.0f, angle_est, 0.0f);
-				angle_prevest = angle_est;
+  					bikeRigidbody.angularVelocity = new Vector3(0.0f, -angle_est * angFactor, 0.0f);
 
-				// frequency of wheel rotation 
-				// unit: Hz
-				float velocity_est = 0.0f; // Initialize velocity estimation
-				float velocity_meas = 0.0f;
-				float velocity_err = 0.0f;
-				float velocity_event =	GetVelocity (data1, data2, data3);
+					//transform.eulerAngles.x = 0.0f;
+					//transform.eulerAngles.z = 0.0f;
+					angle_prevest = angle_est;
 
-				// Debug.Log("Hello!"+velocity_event);
-				if( velocity_event > 0){					
+					////////// Flying ////////// 
+					// frequency of wheel rotation 
+					// unit: Hz
+					float velocity_est = 0.0f; // Initialize velocity estimationb
+					float velocity_meas = 0.0f;
+					float velocity_err = 0.0f;
+					float velocity_event =	GetVelocity (data1, data2, data3);
 
-					float diffTime = Time.time - velocity_eventTime;
-				//	Debug.Log("Hello!"+diffTime);
-					velocity_eventTime = Time.time;
+					if( velocity_event > 0){					
+						float diffTime = Time.time - velocity_eventTime;
+						velocity_eventTime = Time.time;
 
-					velocity_meas = 2.0f / diffTime;
-					velocity_err = velocity_meas - velocity_prevest;
-					velocity_est =  velocity_prevest + K_pv * velocity_err;
+						velocity_meas = 2.0f / diffTime;
+						velocity_err = velocity_meas - velocity_prevest;
+						velocity_est =  velocity_prevest + K_pv * velocity_err;
 
-					velocity_prevest = velocity_est; 
+						velocity_prevest = velocity_est; 
+					}
+					else{
+						velocity_est = decFactor * velocity_prevest; 
+						velocity_prevest = velocity_est;
+					}
 
+					float velocity_input = velocity_scale*(velocity_est - velocity_thres);
+						
+					Debug.Log("Velocity: Meas: " + velocity_meas +"Est: " + velocity_est+"In: " + velocity_input);
+
+					RaycastHit hit;
+					Ray landingRay = new Ray (transform.position, Vector3.down);
+					Physics.Raycast(landingRay, out hit);
+					bikeRigidbody.AddForce(transform.up * (velocity_input));
+					// - 2*hit.distance
 				}
-				else{
-					
-					velocity_est = decFactor * velocity_prevest; 
-					velocity_prevest = velocity_est;
-
-				}
-
-				float velocity_input = velocity_scale*(velocity_est - velocity_thres);
-					
-				Debug.Log("Velocity: Meas: " + velocity_meas +"Est: " + velocity_est+"In: " + velocity_input);
-
-				bikeRigidbody.AddForce(transform.up  * velocity_input);
-				// * (flyingSpeed - 2*hit.distance)
 
 				// signal value from sound sensor
 				float sound = GetSound (data1, data2, data3);
 				if (sound > soundTreshold)
 				{
-					gameController.TakeCoin (-2.0f);
+					gameController.TakeCoin (-1.0f);
 				}
 			}
 			catch (UnityException)
@@ -161,6 +182,8 @@ public class PlayerReal: MonoBehaviour {
 				Debug.Log ("System Exception");
 			}
 		}
+
+		bikeRigidbody.velocity = Vector3.ClampMagnitude(bikeRigidbody.velocity, upSpeed);
 	}
 
 	SensorData ParsePacket (string str) {

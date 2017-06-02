@@ -6,7 +6,7 @@ if ~isempty(instrfind('Tag', 'Arduino'))
 end
 
 % User Defined Properties
-a = serial('/dev/cu.usbmodem411');             % define the Arduino Communication port
+a = serial('COM5');             % define the Arduino Communication port
 set(a, 'Tag', 'Arduino')
 
 fopen(a);

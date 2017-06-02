@@ -57,6 +57,8 @@ public class GameController : MonoBehaviour
     public float coinGenTime = 1.0f;
     public float birdGenTime = 3.0f;
 
+	public Transform cameraInfo;
+
 	private AudioSource audioSource;
 
     private bool game = true;
@@ -70,7 +72,7 @@ public class GameController : MonoBehaviour
 
 		manualText.text = "<Horzontal> Steering\n<Space> Flying\n<S> Special Function\n";
         restartText.text = "";
-        gameoverText.text = "";
+        gameoverText.text = "+";
 		startTime = Time.time;
 
         currentCameraIndex = 0;
@@ -110,8 +112,8 @@ public class GameController : MonoBehaviour
             Application.LoadLevel(Application.loadedLevel);
 
         if (Input.GetKeyDown(KeyCode.Escape))
-            //Application.Quit();
-            UnityEditor.EditorApplication.isPlaying = false;
+            Application.Quit();
+            //UnityEditor.EditorApplication.isPlaying = false;
 
 		if (game){
 			float t = Time.time - startTime;
@@ -163,7 +165,7 @@ public class GameController : MonoBehaviour
 		}
 
 		if (coin < 0){
-			Instantiate(cannon,  playerLocation.position, playerLocation.rotation);
+			Instantiate(cannon,  playerLocation.position, cameraInfo.rotation);
 		}
 
 		UpdateVoiceBar ();
@@ -217,6 +219,7 @@ public class GameController : MonoBehaviour
 		gameoverText.text = "GAME OVER";
 		timerText.color = Color.red;
 		game = false;
+		Debug.Log (timerText.text);
 	}
 }
 

@@ -253,7 +253,7 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1716974314057252}
-  m_LocalRotation: {x: 0.16907571, y: -0.7558804, z: 0.27217132, w: 0.5709475}
+  m_LocalRotation: {x: 0.1690757, y: -0.7558803, z: 0.2721713, w: 0.57094747}
   m_LocalPosition: {x: -4.0762453, y: 5.903862, z: -1.005454}
   m_LocalScale: {x: 100.00001, y: 100, z: 100}
   m_Children: []
@@ -772,7 +772,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb90114c5a69b8640915a5dabc3de624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  birdSpeed: 20
+  birdSpeed: 40
 --- !u!135 &135807002844819554
 SphereCollider:
   m_ObjectHideFlags: 1
