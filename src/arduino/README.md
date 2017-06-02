@@ -1,4 +1,9 @@
-# arduino modules
+# Arduino
 
+Code for Arduino Uno
+
+## Elements
+
+- sound sensor
 - potentiometer
-- switch
+- tect switch
