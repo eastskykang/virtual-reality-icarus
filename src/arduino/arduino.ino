@@ -1,4 +1,4 @@
-#define LOOP_DELAY      5   
+#define LOOP_DELAY      2   
 #define SENDING_DELAY   50  
 #define LAMBDA          0.2   // smoothing parameter < 1 
 
@@ -17,6 +17,8 @@ int buttonState = 0;          // variable for reading the button status
 int switchState = 0;          // variable for reading the lead switch status
 int potentValue = 0;          // value read from the pot
 int soundLevel = 0;           // value from sound sensor
+
+int switchStateLast = 0;      // switch value of t-1
 
 // timers
 unsigned long data_timer;
@@ -63,7 +65,7 @@ void loop() {
 
   unsigned long current_time = millis();
 
-  if (switchState) {
+  if (switchState == 1 && switchStateLast == 0) {
     cnt++;
   } else {
     // for debug
@@ -94,10 +96,13 @@ void loop() {
   
   // adjust delay
   delay(LOOP_DELAY);
+
+  // last state update
+  switchStateLast = switchState;
 }
 
 void calcVelo() {
-  velocity = 1000 * cnt / SENDING_DELAY;
+  velocity = cnt;
 //  velocity = 1000 * LAMBDA * cnt / SENDING_DELAY + (1 - LAMBDA) * velocity;
   cnt = 0;
 }
@@ -117,4 +122,3 @@ void sendPotData() {
 void sendSndData() {
   Serial.println(SOUND_PREFIX + String(soundLevel));
 }
-
